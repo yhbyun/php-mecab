@@ -50,10 +50,10 @@ class meCab
             static::$default_command = $options['command'];
 
         if (isset($options['dictionary_dir']))
-            static::$default_command = $options['dictionary_dir'];
+            static::$default_dictionary_dir = $options['dictionary_dir'];
 
         if (isset($options['dictionary']))
-            static::$default_command = $options['dictionary'];
+            static::$default_dictionary = $options['dictionary'];
 
         return true;
     }
