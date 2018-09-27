@@ -1,15 +1,20 @@
 {
-    "name": "ateliee/mecab",
+    "name": "youaoi/mecab",
     "type": "library",
     "description": "mecab reading for php",
     "keywords": [],
-    "homepage": "https://github.com/ateliee/mecab",
+    "homepage": "https://github.com/youaoi/mecab",
     "license": "MIT",
     "authors": [
         {
             "name": "ateliee",
             "email": "info@ateliee.com",
             "homepage": "http://ateliee.com"
+        },
+        {
+            "name": "youaoi",
+            "email": "ja01youki@gmail.com",
+            "homepage": "http://aoi.ooo"
         }
     ],
     "repositories": [
