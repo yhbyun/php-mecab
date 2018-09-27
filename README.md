@@ -1,5 +1,5 @@
 # meCab reading php library
-オープンソース 形態素解析エンジンmeCab(http://taku910.github.io/mecab/)を
+オープンソース 形態素解析エンジンmeCab( http://taku910.github.io/mecab/ )を
 
 phpで利用する場合、インストールが大変なのでライブラリ化してみました。
 
