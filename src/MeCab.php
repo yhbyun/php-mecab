@@ -5,7 +5,7 @@ namespace Youaoi\MeCab;
 /**
  * Class MeCab
  *  php mecab.soを必要としない。実行ファイル起動型のMeCabユーティリティ
- * @version 0.9
+ * @version 0.9.0
  * @package Youaoi\MeCab
  * @property-read string|null $tmpFile
  * @property-read string|null $command
