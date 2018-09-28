@@ -1,9 +1,9 @@
 {
-    "name": "youaoi/mecab",
+    "name": "youaoi/php-mecab",
     "type": "library",
-    "description": "mecab reading for php",
-    "keywords": [],
-    "homepage": "https://github.com/youaoi/mecab",
+    "description": "mecab reading for php7",
+    "keywords": ['mecab'],
+    "homepage": "https://github.com/youaoi/php-mecab",
     "license": "MIT",
     "authors": [
         {
@@ -17,16 +17,10 @@
             "homepage": "http://aoi.ooo"
         }
     ],
-    "repositories": [
-        {
-            "type": "pear",
-            "url": "http://pear.php.net/"
-        }
-    ],
     "require": {
-        "php": ">=5.0.0"
+        "php": ">=7.0.0"
     },
     "autoload": {
-        "psr-4": { "meCab\\": "src" }
+        "psr-4": { "Youaoi\\MeCab\\": "src" }
     }
 }

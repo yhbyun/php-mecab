@@ -1,43 +1,47 @@
 <?php
 
-namespace meCab;
-
-use Throwable;
+namespace Youaoi\MeCab;
 
 /**
- * Class meCab
- * @package meCab
- * @property-read string|null $tmp_file
+ * Class MeCab
+ *  php mecab.soを必要としない。実行ファイル起動型のMeCabユーティリティ
+ * @version 0.9
+ * @package Youaoi\MeCab
+ * @property-read string|null $tmpFile
  * @property-read string|null $command
  * @property-read string|null $dictionary
- * @property-read string|null $dictionary_dir
+ * @property-read string|null $dictionaryDir
  */
-class meCab
+class MeCab
 {
     /** @var string */
-    private $tmp_file = '';
+    protected $tmpFile = '';
     /** @var string */
-    private $command = '';
+    protected $command = '';
     /** @var string|null */
-    private $dictionary;
+    protected $dictionary;
     /** @var string|null */
-    private $dictionary_dir;
+    protected $dictionaryDir;
 
     /** @var string */
-    static private $default_command = "mecab";
+    protected static $defaultCommand = "mecab";
     /** @var string|null */
-    static private $default_dictionary_dir = null;
+    protected static $defaultDictionaryDir = null;
     /** @var string|null */
-    static private $default_dictionary = null;
-    /** @var string|null */
-    static private $auto_dictionary_dir = null;
+    protected static $defaultDictionary = null;
+    /** @var string */
+    protected static $wordClass = MeCabWord::class;
+
+// BE-DELETED: getAutoDictionaryDir が廃止になったので廃止
+//    /** @var string|null */
+//    protected static $autoDictionaryDir = null;
 
     function __construct()
     {
-        $this->tmp_file = tempnam(sys_get_temp_dir(), 'mecab-');
-        $this->command = static::$default_command;
-        $this->dictionary = static::$default_dictionary;
-        $this->dictionary_dir = static::$default_dictionary_dir;
+        $this->tmpFile = tempnam(sys_get_temp_dir(), 'mecab-');
+        $this->command = static::$defaultCommand;
+        $this->dictionary = static::$defaultDictionary;
+        $this->dictionaryDir = static::$defaultDictionaryDir;
     }
 
     /**
@@ -47,32 +51,36 @@ class meCab
     public static function setDefaults(array $options = [])
     {
         if (isset($options['command']))
-            static::$default_command = $options['command'];
+            static::$defaultCommand = $options['command'];
 
-        if (isset($options['dictionary_dir']))
-            static::$default_dictionary_dir = $options['dictionary_dir'];
+        if (isset($options['dictionaryDir']))
+            static::$defaultDictionaryDir = $options['dictionaryDir'];
 
         if (isset($options['dictionary']))
-            static::$default_dictionary = $options['dictionary'];
+            static::$defaultDictionary = $options['dictionary'];
+
+        if (isset($options['wordClass']))
+            static::$wordClass = $options['wordClass'];
 
         return true;
     }
 
     //<editor-fold desc="static getter/setter">
+
     /**
      * @return string
      */
     public static function getDefaultCommand()
     {
-        return self::$default_command;
+        return self::$defaultCommand;
     }
 
     /**
-     * @param string $default_command
+     * @param string $defaultCommand
      */
-    public static function setDefaultCommand(string $default_command)
+    public static function setDefaultCommand(string $defaultCommand)
     {
-        self::$default_command = $default_command;
+        self::$defaultCommand = $defaultCommand;
     }
 
     /**
@@ -80,15 +88,15 @@ class meCab
      */
     public static function getDefaultDictionaryDir()
     {
-        return self::$default_dictionary_dir;
+        return self::$defaultDictionaryDir;
     }
 
     /**
-     * @param null|string $default_dictionary_dir
+     * @param null|string $defaultDictionaryDir
      */
-    public static function setDefaultDictionaryDir(string $default_dictionary_dir = null)
+    public static function setDefaultDictionaryDir(string $defaultDictionaryDir = null)
     {
-        self::$default_dictionary_dir = $default_dictionary_dir;
+        self::$defaultDictionaryDir = $defaultDictionaryDir;
     }
 
 
@@ -97,21 +105,20 @@ class meCab
      */
     public static function getDefaultDictionary()
     {
-        return self::$default_dictionary;
+        return self::$defaultDictionary;
     }
 
     /**
-     * @param null|string $default_dictionary
+     * @param null|string $defaultDictionary
      */
-    public static function setDefaultDictionary(string $default_dictionary = null)
+    public static function setDefaultDictionary(string $defaultDictionary = null)
     {
-        self::$default_dictionary = $default_dictionary;
+        self::$defaultDictionary = $defaultDictionary;
     }
 
     //</editor-fold>
 
     //<editor-fold desc="instance setter">
-
     /**
      * @param string $command
      */
@@ -121,11 +128,11 @@ class meCab
     }
 
     /**
-     * @param string|null $dictionary_dir
+     * @param string|null $dictionaryDir
      */
-    public function setDictionaryDir(string $dictionary_dir = null)
+    public function setDictionaryDir(string $dictionaryDir = null)
     {
-        $this->dictionary_dir = $dictionary_dir;
+        $this->dictionaryDir = $dictionaryDir;
     }
 
     /**
@@ -135,76 +142,123 @@ class meCab
     {
         $this->dictionary = $dictionary;
     }
+
     //</editor-fold>
 
-    public function getDictionaryFilePath()
-    {
-        if (! $this->dictionary) return null;
+// BE-DELETED: --userdic の設定にディレクトリが不要だったので廃止
+//    /**
+//     * 固有辞書が設定されていれば辞書のパスを返却する。
+//     * @return null|string
+//     */
+//    public function getDictionaryFilePath()
+//    {
+//        if (!$this->dictionary) return null;
+//
+//        // フルパス
+//        if (strpos($this->dictionary, '/') === 0) return $this->dictionary;
+//        if (strpos($this->dictionary, ':\\') === 1) return $this->dictionary;
+//
+//        $dir = $this->dictionaryDir ?? static::getAutoDictionaryDir();
+//        $dir = rtrim($dir, '/\\') . '/';
+//        return $dir . $this->dictionary;
+//    }
 
-        // フルパス
-        if (strpos($this->dictionary, '/') === 0) return $this->dictionary;
-        if (strpos($this->dictionary, ':\\') === 1) return $this->dictionary;
-
-        $dir = rtrim($this->dictionary_dir ?? static::autoDictionaryDir(), '/\\') . '/';
-        return $dir . $this->dictionary;
-    }
+// BE-DELETED: getDictionaryFilePath が廃止になったので廃止
+//    /**
+//     * mecabに設定済みのDirectoryを読み込む。
+//     *  execで mecab-config が利用可能である必要がある。
+//     * @return null|string
+//     */
+//    public static function getAutoDictionaryDir()
+//    {
+//        if (! self::$autoDictionaryDir) {
+//            self::$autoDictionaryDir = self::exec('echo `mecab-config --dicdir`');
+//        }
+//        return self::$autoDictionaryDir;
+//    }
 
     /**
-     * @param $text
-     * @return meCabWord[]|null
+     * 与えられたテキストを解析しワード配列を返却する。
+     * @param string $text
+     * @return MeCabWord[]
      * @throws MeCabException
      */
     public function analysis($text)
     {
-        if (! file_put_contents($this->tmp_file, $text)) {
-            throw new MeCabException($this, sprintf('Error write tmp file in %s', $this->tmp_file));
+        if (!file_put_contents($this->tmpFile, $text)) {
+            throw new MeCabException($this, sprintf('Error write tmp file in %s', $this->tmpFile));
         }
         try {
             $command = [];
             $command[] = $this->command;
-            $command[] = $this->tmp_file;
-            if ($path = $this->getDictionaryFilePath()) {
-                $command[] = sprintf('--userdic="%s"', $path);
-            } elseif ($this->dictionary_dir) {
-                $command[] = sprintf('--dicdir="%s"', $this->dictionary_dir);
+            $command[] = $this->tmpFile;
+            if ($this->dictionary) {
+                $command[] = sprintf('--userdic="%s"', $this->dictionary);
+            } elseif ($this->dictionaryDir) {
+                $command[] = sprintf('--dicdir="%s"', $this->dictionaryDir);
             }
 
             $this->exec(implode(' ', $command), $res);
             if ($res && (count($res) > 0)) {
+                /** @var MeCabWord[] $words */
                 $words = array();
                 foreach ($res as $k => $r) {
                     if ($r == 'EOS' && count($res) >= ($k + 1)) {
                         break;
                     }
-                    $words[] = new meCabWord($r);
+                    $words[] = new static::$wordClass($r);
                 }
                 return $words;
             } else {
                 throw new MeCabException(sprintf('Error text analysis.'));
             }
         } finally {
-            @unlink($this->tmp_file);
+            @unlink($this->tmpFile);
         }
     }
 
     /**
      * @param string $text
-     * @return meCabWord[]|null
+     * @return MeCabWord[]|null
      * @throws MeCabException
      */
     public static function parse($text)
     {
-        return (new meCab())->analysis($text);
+        return (new MeCab())->analysis($text);
     }
 
     /**
+     * ヨミガナを取得する
+     *  > あの主題1はtitle。 → アノシュダイハ。
      * @param string $text
      * @return string
      * @throws MeCabException
      */
     public static function toReading($text)
     {
-        return implode('', array_column((new meCab())->analysis($text), 'reading'));
+        return implode('', array_column((new MeCab())->analysis($text), 'reading'));
+    }
+
+    /**
+     * Sort用の文字列を返却する。
+     *  > あの主題1はtitle。 → アノシュダイ1ハtitle。
+     * @param string $text
+     * @return string
+     * @throws MeCabException
+     */
+    public static function toSortText($text)
+    {
+        return implode('', array_column((new MeCab())->analysis($text), 'sortText'));
+    }
+
+    public function __get($name)
+    {
+        return $this->$name;
+    }
+
+    public function __isset($name)
+    {
+        return isset($this->$name);
     }
 
     /**
@@ -212,107 +266,11 @@ class meCab
      * @param $res
      * @return string
      */
-    private function exec($command, &$res)
+    protected function exec($command, &$res)
     {
-        if ($text = exec($command, $res)) {
-        }
-        return $text;
-    }
-
-    public function __get($name)
-    {
-        return $this->$name;
-    }
-
-    public function __isset($name)
-    {
-        return isset($this->$name);
-    }
-}
-
-/**
- * Class meCabWord
- * @package meCab
- * @property-read string|null $str
- * @property-read string|null $text
- * @property-read string|null $speech
- * @property-read string|null $speech_info
- * @property-read string|null $conjugate
- * @property-read string|null $conjugate_type
- * @property-read string|null $original
- * @property-read string|null $reading
- * @property-read string|null $pronunciation
- */
-class meCabWord
-{
-    protected $str;
-    protected $text;
-    protected $speech;
-    protected $speech_info;
-    protected $conjugate;
-    protected $conjugate_type;
-    protected $original;
-    protected $reading;
-    protected $pronunciation;
-
-    /**
-     * @param $text
-     */
-    function __construct($text)
-    {
-        $this->str = $text;
-
-        $res = preg_split('/\t/', $text);
-        if (count($res) != 2) return;
-
-        $this->text = $res[0];
-        $info = explode(',', $res[1]);
-
-        $this->speech_info = array_fill(0, 3, null);
-        foreach ($info as $k => $t) {
-            if ($t == '*') {
-                continue;
-            }
-            if ($k == 0) {
-                $this->speech = $t;
-            } else if ($k <= 3) {
-                $this->speech_info[$k - 1] = $t;
-            } else if ($k == 4) {
-                $this->conjugate = $t;
-            } else if ($k == 5) {
-                $this->conjugate_type = $t;
-            } else if ($k == 6) {
-                $this->original = $t;
-            } else if ($k == 7) {
-                $this->reading = $t;
-            } else if ($k == 8) {
-                $this->pronunciation = $t;
-            }
-        }
-    }
-
-    public function __get($name)
-    {
-        return $this->$name;
-    }
-
-    public function __isset($name)
-    {
-        return isset($this->$name);
+        return exec($command, $res);
     }
 }
 
 
-class MeCabException extends \Exception
-{
-    /**
-     * @var meCab
-     */
-    public $instance;
 
-    public function __construct(meCab $instance, string $message = "", int $code = 0, Throwable $previous = null)
-    {
-        $this->instance = $instance;
-        parent::__construct($message, $code, $previous);
-    }
-}
