@@ -2,7 +2,7 @@
     "name": "youaoi/php-mecab",
     "type": "library",
     "description": "mecab reading for php7",
-    "keywords": ['mecab'],
+    "keywords": ["mecab"],
     "homepage": "https://github.com/youaoi/php-mecab",
     "license": "MIT",
     "authors": [
