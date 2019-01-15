@@ -185,7 +185,7 @@ class MeCab
      */
     public function analysis($text)
     {
-        if (!file_put_contents($this->tmpFile, $text)) {
+        if (!file_put_contents($this->tmpFile, $text . PHP_EOL)) {
             throw new MeCabException($this, sprintf('Error write tmp file in %s', $this->tmpFile));
         }
         try {
