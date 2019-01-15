@@ -228,6 +228,18 @@ class MeCab
     }
 
     /**
+     * 형태소를 배열로 반환한다.
+     *
+     * @param string $text
+     * @return array
+     * @throws MeCabException
+     */
+    public static function split($text)
+    {
+        return array_map(function ($word) {return $word->text;}, (new MeCab())->analysis($text));
+    }
+
+    /**
      * ヨミガナを取得する
      *  > あの主題1はtitle。 → アノシュダイハ。
      * @param string $text
